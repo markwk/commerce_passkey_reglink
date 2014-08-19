@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * Update hook to add a field to a order
+ */
+function commerce_passkey_reglink_update_7000() {
+  $field_name = 'field_passkey_bridgeid';
+ 
+  // Make sure the field doesn't already exist.
+  if (!field_info_field($field_name)) {
+      // Create the field.
+      $field = array(
+        'field_name' => $field_name,
+        'type' => 'text',
+        'settings' => array(
+          'max_length' => 64,
+        ),
+      );
+      field_create_field($field);
+ 
+      // Create the instance.
+      $instance = array(
+        'field_name' => $field_name,
+        'entity_type' => 'commerce_order',
+        'bundle' => 'commerce_order',
+        'label' => 'Bridge ID',
+        'description' => 'Passkey Bridge ID.',
+        'required' => FALSE,
+				'display' => array(
+				  'default' => array('label' => 'hidden', 'format' => 'hidden'),
+				),
+      );
+ 
+      field_create_instance($instance);
+      watchdog('commerce_passkey_reglink', t('!field_name was added successfully.', array('!field_name' => $field_name)));
+  }
+  else {
+    watchdog('commerce_passkey_reglink', t('!field_name already exists.', array('!field_name' => $field_name)));
+  }
+}

@@ -1,0 +1,7 @@
+name = Commerce Passkey Reglink
+description = Commerce passkey reglink for hotel reservation
+package = Custom
+version = VERSION
+core = 7.x
+configure = admin/commerce/config/commerce-passkey-reglink
+

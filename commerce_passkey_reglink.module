@@ -1,0 +1,353 @@
+<?php
+/**
+ * Implements hook_help().
+ */
+function commerce_passkey_reglink_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#commerce_passkey_reglink':
+      $output = '';
+      $output .= '<h3>' . t('Commerce Passkey Reglink') . '</h3>';
+      $output .= '<p>' . t('Provides API integration for hotel reservation via passkey') . '</p>';
+    return $output;
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function commerce_passkey_reglink_permission() {
+  return array(
+    'administer commerce_passkey_reglinks' => array(
+      'title' => t('Administer commerce_passkey_reglinks'),
+    ),
+	  'view bridge link' => array(
+	    'title' => t('View Passkey Bridge Link'),
+	  ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_passkey_reglink_menu() {
+  $items['admin/commerce/config/commerce-passkey-reglink'] = array(
+    'title' => 'Commerce Passkey Reglink Configuration',
+    'description' => 'Configure API settings for Passkey Reglink.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_passkey_reglink_admin_display'),
+    'access arguments' => array('administer commerce_passkey_reglinks'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  $items['hotel-reservation'] = array(
+    'title' => 'Hotel Reservation Callback',
+    'description' => 'Reservation Callback',
+    'page callback' => 'commerce_passkey_reservation_callback',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  return $items;
+}
+
+function commerce_passkey_reservation_callback() {
+	global $user;
+	$bridgeId = $_GET['bridge'];
+	$extAckNumber = $_GET['extacknum'];
+	$ackNumber = $_GET['resacknum'];
+	$resStatus = $_GET['status'];
+	
+	//load order from bridge id
+	$result = db_select('field_data_field_passkey_bridgeid', 'b')
+   ->fields('b', array('entity_id'))
+   ->condition('field_passkey_bridgeid_value', $bridgeId,'=')
+   ->execute()
+   ->fetchAssoc();
+  if (!empty($result)) {
+	  $order_id = $result['entity_id'];
+	  $order = commerce_order_load($order_id);
+	  $order->data['extAckNumber']  = $extAckNumber;
+	  $order->data['ackNumber']  = $ackNumber;
+	  $order->data['resStatus'] = $resStatus;
+	  commerce_order_save($order);
+	  if ($user->uid) {
+		  drupal_goto('user/' . $user->uid . '/orders/' . $order->order_id);
+	  }
+	  else {
+	  	drupal_goto('user/login');
+	  }
+  }
+  else {
+	  drupal_goto('user/login');
+  }
+}
+
+
+/**
+ * Passkey RegLink settings form
+ */
+function commerce_passkey_reglink_admin_display() {
+	$form =  array();
+	$form['commerce_passkey_reglink']  = array(
+		'#type' => 'fieldset',
+		'#title' => t('Passkey RegLink')
+	);
+	$form['commerce_passkey_reglink']['commerce_passkey_reglink_url']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Site Url'),
+		'#default_value' => variable_get('commerce_passkey_reglink_url', 'https://training-api.passkey.com')
+	);
+	$form['commerce_passkey_reglink']['commerce_passkey_reglink_api']  = array(
+		'#type' => 'textfield',
+		'#title' => t('API Url'),
+		'#default_value' => variable_get('commerce_passkey_reglink_api', 'https://training-api.passkey.com/RegLink/API')
+	);
+	
+	$form['commerce_passkey_reglink']['commerce_passkey_reglink_partner_id']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Partner ID'),
+		'#default_value' => variable_get('commerce_passkey_reglink_partner_id', '136260')
+	);
+
+	$form['commerce_passkey_reglink']['commerce_passkey_reglink_username']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Username'),
+		'#default_value' => variable_get('commerce_passkey_reglink_username', 'reglinkapi')
+	);
+	
+	$form['commerce_passkey_reglink']['commerce_passkey_reglink_password']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Password'),
+		'#default_value' => variable_get('commerce_passkey_reglink_password', 'passkey1')
+	);
+	
+	
+	$form['commerce_passkey_reglink']['commerce_passkey_reglink_event_id']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Event ID'),
+		'#default_value' => variable_get('commerce_passkey_reglink_event_id', '139992')
+	);
+	
+	$form['commerce_passkey_reglink']['commerce_passkey_reglink_event_code']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Event Code'),
+		'#default_value' => variable_get('commerce_passkey_reglink_event_code', 'RTEATT0116')
+	);
+	
+	$form['commerce_passkey_reglink_text']  = array(
+		'#type' => 'fieldset',
+		'#title' => t('Text & Display Settings')
+	);
+	
+	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_hotel_text']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Hotel Text'),
+		'#default_value' => variable_get('commerce_passkey_reglink_hotel_text', 'RESERVE A ROOM AT THE HYATT REGENCY HOTEL')
+	);
+	
+	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_link_text']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Link Text'),
+		'#default_value' => variable_get('commerce_passkey_reglink_link_text', 'Follow this link to reserve a room at the convention hotel.')
+	);
+	
+	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_reserved_hotel_text']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Hotel Text Reserved'),
+		'#default_value' => variable_get('commerce_passkey_reglink_reserved_hotel_text', 'MODIFY RESERVATION AT THE HYATT REGENCY HOTEL')
+	);
+	
+	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_reserved_link_text']  = array(
+		'#type' => 'textfield',
+		'#title' => t('Link Text Reserved'),
+		'#default_value' => variable_get('commerce_passkey_reglink_reserved_link_text', 'Follow this link to modify reservation at the convention hotel.')
+	);
+	
+	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_payment_page']  = array(
+		'#type' => 'textarea',
+		'#rows' => 2,
+		'#title' => t('Payment Page Text'),
+		'#default_value' => variable_get('commerce_passkey_reglink_payment_page', 'A link to reserve a room at the Hyatt Regency Dallas is on your convention registration confirmation which you will receive by email once your order is completed.')
+	);	
+	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_payment_page_display']  = array(
+		'#type' => 'checkbox',
+		'#title' => t('Show on payment checkout page'),
+		'#default_value' => variable_get('commerce_passkey_reglink_payment_page_display', true)
+	);
+	
+	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_complete_page_display']  = array(
+		'#type' => 'checkbox',
+		'#title' => t('Show on checkout complete page'),
+		'#default_value' => variable_get('commerce_passkey_reglink_complete_page_display', true)
+	);
+	
+	return system_settings_form($form);
+}
+
+
+/**
+ * Implements hook_entity_view_alter().
+ */
+function commerce_passkey_reglink_entity_view_alter(&$build, $type) {
+  if ($type == "commerce_order") {
+	  $order = $build['#entity'];
+	  if ($order->field_passkey_bridgeid['und'][0]['value'] && user_access('view bridge link')) {
+		  if (!empty($order->data['resStatus'])) {
+			  $link = commerce_passkey_reglink_reserved_room_link($order);
+		  	$build['commerce_passkey_reglink'][0]['#markup'] = theme('commerce_passkey_reglink_reserved_link', array('link' => $link));
+		  }
+		  else {
+			  $link = commerce_passkey_reglink_bridge_link($order);
+		  	$build['commerce_passkey_reglink'][0]['#markup'] = theme('commerce_passkey_reglink_link', array('link' => $link));
+		  }
+	  }
+  }
+}
+
+/**
+ * Submits an API request to Passkey.
+ */
+function commerce_passkey_reglink_api_request($order) {
+  global $user;
+  $profile = commerce_customer_profile_load($order->commerce_customer_billing['und'][0]['profile_id']);
+  // Get the API URL
+  $url = variable_get('commerce_passkey_reglink_api', 'https://training-api.passkey.com/RegLink/API');
+	$params = array();
+  // Prepare the name-value pair array to be sent as a string.
+  $pairs = array();
+
+  $pairs['OP'] = 'CreateBridgeHTTP';
+  $pairs['Destination'] = '02';
+  $pairs['Version'] = '4.00.02';
+  $pairs['Mode'] = 'S';
+
+  $pairs['Username'] = variable_get('commerce_passkey_reglink_username', 'reglinkapi');
+  $pairs['Password'] = variable_get('commerce_passkey_reglink_password', 'passkey1');
+  $pairs['PartnerID'] = variable_get('commerce_passkey_reglink_partner_id', '136260');
+
+  $pairs['EventID'] = variable_get('commerce_passkey_reglink_event_id', '139992');
+  $pairs['EventCode'] = variable_get('commerce_passkey_reglink_event_code
+', 'RTEATT0116');
+
+	$pairs['ExtReferenceID'] = 'ABC123';
+	$pairs['LastName'] = $profile->commerce_customer_address['und'][0]['name_line'] ? $profile->commerce_customer_address['und'][0]['name_line'] : $user->mail;
+	$pairs['FirstName'] = '';
+	$pairs['Position'] = '';
+	$pairs['Organization'] = $profile->commerce_customer_address['und'][0]['organisation_name'] ? $profile->commerce_customer_address['und'][0]['organisation_name'] : '';
+	$pairs['Address1'] = $profile->commerce_customer_address['und'][0]['thoroughfare'] ? $profile->commerce_customer_address['und'][0]['thoroughfare'] : '';
+	$pairs['City'] = $profile->commerce_customer_address['und'][0]['locality'] ? $profile->commerce_customer_address['und'][0]['locality'] : '';
+	$pairs['State'] = $profile->commerce_customer_address['und'][0]['administrative_area'] ? $profile->commerce_customer_address['und'][0]['administrative_area'] : '';
+	$pairs['ZipCode'] = $profile->commerce_customer_address['und'][0]['postal_code'] ? $profile->commerce_customer_address['und'][0]['postal_code'] : '';
+	$pairs['CountryCode'] = $profile->commerce_customer_address['und'][0]['country'] ? $profile->commerce_customer_address['und'][0]['country'] : 'US';
+	$pairs['EmailAddress'] = $user->mail;
+	$pairs['WorkPhone'] = $profile->field_telephone['und'][0]['value'] ?  $profile->field_telephone['und'][0]['value'] : '' ;
+  
+  foreach ($pairs as $key => $value) {
+    $params[] = $key . '=' . urlencode($value);
+  }
+	$full_url = $url . '?' . implode('&', $params);
+	$result = drupal_http_request($full_url);
+		
+	if ($result->code == 200) {
+		$dom = new DOMDocument();
+		$dom->loadHTML($result->data);
+		$dom->preserveWhiteSpace = false;
+		$elements = $dom->getElementsByTagName('title');
+		while($title = $elements->item(0)) {       
+		   $title->parentNode->removeChild($title);
+		}
+    $bridgeID = $dom->saveHTML();
+
+		return trim(strip_tags($bridgeID));
+	}
+	else {
+	  watchdog('commerce_passkey_reglink', 'Request error: @error', array('@error' => $result->error), WATCHDOG_ERROR);
+	  return FALSE;
+	}
+}
+
+/**
+ * Get RegLink on the basis of Bridge ID
+ */
+function commerce_passkey_reglink_bridge_link($order) {
+	global $user;
+	$url = variable_get('commerce_passkey_reglink_api', 'https://training-api.passkey.com/RegLink/API');
+	$profile = commerce_customer_profile_load($order->commerce_customer_billing['und'][0]['profile_id']);
+	$bridge_id = $order->field_passkey_bridgeid['und'][0]['value'];
+	$pairs = array();
+	$params = array();
+	$pairs['OP'] = 'GetForRedirectResWeb';
+  $pairs['Destination'] = '02';
+  $pairs['Version'] = '4.00.02';
+  $pairs['Mode'] = 'S';
+
+  $pairs['Username'] = variable_get('commerce_passkey_reglink_username', 'reglinkapi');
+  $pairs['Password'] = variable_get('commerce_passkey_reglink_password', 'passkey1');
+  $pairs['PartnerID'] = variable_get('commerce_passkey_reglink_partner_id', '136260');
+
+  $pairs['LastName'] = $profile->commerce_customer_address['und'][0]['name_line'] ? $profile->commerce_customer_address['und'][0]['name_line'] : $user->mail;
+  $pairs['BridgeID'] = $bridge_id;
+
+  foreach ($pairs as $key => $value) {
+    $params[] = $key . '=' . urlencode($value);
+  }
+	return $url . '?' . implode('&', $params);
+}
+
+/**
+ * Get Reservation modification Link from order
+ */
+function commerce_passkey_reglink_reserved_room_link($order) {
+	global $user;
+	$url = variable_get('commerce_passkey_reglink_url', 'https://training-aws.passkey.com');
+	$extAckNumber = $order->data['extAckNumber'];
+  $ackNumber = $order->data['ackNumber'];
+  $eventID = variable_get('commerce_passkey_reglink_event_id', '139992');
+  return $url . '/event/' . $eventID . '/owner/'. $extAckNumber .'/r/edit/' . $ackNumber;
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function commerce_passkey_reglink_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'commerce_checkout_form_complete') {
+	  if (is_numeric(arg(1))) {
+		  $order_id = arg(1);
+		  $order = commerce_order_load($order_id);
+		  if ($order->field_passkey_bridgeid['und'][0]['value'] && user_access('view bridge link') && variable_get('commerce_passkey_reglink_complete_page_display', true)) {
+			  $link = commerce_passkey_reglink_bridge_link($order);
+			  $form['checkout_complete_message']['passkey_link'] = array(
+				  '#markup' => theme('commerce_passkey_reglink_link', array('link' => $link)),
+				);
+		  } 
+	  }
+  }
+  if ($form_id == 'commerce_checkout_form_review' && variable_get('commerce_passkey_reglink_payment_page_display', true)) {
+	  $form['checkout_review']['review']['#data']['hotel_information'] = array(
+	  	'title' => t('Hotel Information'),
+	    'data' => variable_get('commerce_passkey_reglink_payment_page', '')
+	  );
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_passkey_reglink_theme() {
+	$hotel_text = variable_get('commerce_passkey_reglink_hotel_text', '');
+	$link_text = variable_get('commerce_passkey_reglink_link_text', '');
+	$hotel_text_reserved = variable_get('commerce_passkey_reglink_reserved_hotel_text', '');
+	$link_text_reserved = variable_get('commerce_passkey_reglink_reserved_link_text', '');
+  return array(
+    'commerce_passkey_reglink_link' => array(
+      'variables' => array('link' => NULL, 'hotel_text' => $hotel_text, 'link_text' => $link_text),
+      'path' => drupal_get_path('module', 'commerce_passkey_reglink') . '/theme',
+      'template' => 'commerce-passkey-reglink-link',
+    ),
+	  'commerce_passkey_reglink_reserved_link' => array(
+	    'variables' => array('link' => NULL, 'hotel_text' => $hotel_text_reserved, 'link_text' => $link_text_reserved),
+	    'path' => drupal_get_path('module', 'commerce_passkey_reglink') . '/theme',
+	    'template' => 'commerce-passkey-reglink-reserved-link',
+	  ),
+  );
+}
