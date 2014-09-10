@@ -210,7 +210,7 @@ function commerce_passkey_reglink_api_request($order) {
   global $user;
   $profile = commerce_customer_profile_load($order->commerce_customer_billing['und'][0]['profile_id']);
   // Get the API URL
-  $url = variable_get('commerce_passkey_reglink_api', 'https://training-api.passkey.com/RegLink/API');
+  $url = variable_get('commerce_passkey_reglink_api');
 	$params = array();
   // Prepare the name-value pair array to be sent as a string.
   $pairs = array();
@@ -220,13 +220,12 @@ function commerce_passkey_reglink_api_request($order) {
   $pairs['Version'] = '4.00.02';
   $pairs['Mode'] = 'S';
 
-  $pairs['Username'] = variable_get('commerce_passkey_reglink_username', 'reglinkapi');
-  $pairs['Password'] = variable_get('commerce_passkey_reglink_password', 'passkey1');
-  $pairs['PartnerID'] = variable_get('commerce_passkey_reglink_partner_id', '136260');
+  $pairs['Username'] = variable_get('commerce_passkey_reglink_username');
+  $pairs['Password'] = variable_get('commerce_passkey_reglink_password');
+  $pairs['PartnerID'] = variable_get('commerce_passkey_reglink_partner_id');
 
-  $pairs['EventID'] = variable_get('commerce_passkey_reglink_event_id', '139992');
-  $pairs['EventCode'] = variable_get('commerce_passkey_reglink_event_code
-', 'RTEATT0116');
+  $pairs['EventID'] = variable_get('commerce_passkey_reglink_event_id');
+  $pairs['EventCode'] = variable_get('commerce_passkey_reglink_event_code');
 
 	$pairs['ExtReferenceID'] = 'ABC123';
 	$pairs['LastName'] = $profile->commerce_customer_address['und'][0]['name_line'] ? $profile->commerce_customer_address['und'][0]['name_line'] : $user->mail;
