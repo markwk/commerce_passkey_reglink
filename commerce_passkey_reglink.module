@@ -94,43 +94,43 @@ function commerce_passkey_reglink_admin_display() {
 	$form['commerce_passkey_reglink']['commerce_passkey_reglink_url']  = array(
 		'#type' => 'textfield',
 		'#title' => t('Site Url'),
-		'#default_value' => variable_get('commerce_passkey_reglink_url', 'https://training-api.passkey.com')
+		'#default_value' => variable_get('commerce_passkey_reglink_url', '')
 	);
 	$form['commerce_passkey_reglink']['commerce_passkey_reglink_api']  = array(
 		'#type' => 'textfield',
 		'#title' => t('API Url'),
-		'#default_value' => variable_get('commerce_passkey_reglink_api', 'https://training-api.passkey.com/RegLink/API')
+		'#default_value' => variable_get('commerce_passkey_reglink_api', '')
 	);
 	
 	$form['commerce_passkey_reglink']['commerce_passkey_reglink_partner_id']  = array(
 		'#type' => 'textfield',
 		'#title' => t('Partner ID'),
-		'#default_value' => variable_get('commerce_passkey_reglink_partner_id', '136260')
+		'#default_value' => variable_get('commerce_passkey_reglink_partner_id', '')
 	);
 
 	$form['commerce_passkey_reglink']['commerce_passkey_reglink_username']  = array(
 		'#type' => 'textfield',
 		'#title' => t('Username'),
-		'#default_value' => variable_get('commerce_passkey_reglink_username', 'reglinkapi')
+		'#default_value' => variable_get('commerce_passkey_reglink_username', '')
 	);
 	
 	$form['commerce_passkey_reglink']['commerce_passkey_reglink_password']  = array(
 		'#type' => 'textfield',
 		'#title' => t('Password'),
-		'#default_value' => variable_get('commerce_passkey_reglink_password', 'passkey1')
+		'#default_value' => variable_get('commerce_passkey_reglink_password', '')
 	);
 	
 	
 	$form['commerce_passkey_reglink']['commerce_passkey_reglink_event_id']  = array(
 		'#type' => 'textfield',
 		'#title' => t('Event ID'),
-		'#default_value' => variable_get('commerce_passkey_reglink_event_id', '139992')
+		'#default_value' => variable_get('commerce_passkey_reglink_event_id', '')
 	);
 	
 	$form['commerce_passkey_reglink']['commerce_passkey_reglink_event_code']  = array(
 		'#type' => 'textfield',
 		'#title' => t('Event Code'),
-		'#default_value' => variable_get('commerce_passkey_reglink_event_code', 'RTEATT0116')
+		'#default_value' => variable_get('commerce_passkey_reglink_event_code', '')
 	);
 	
 	$form['commerce_passkey_reglink_text']  = array(
@@ -141,7 +141,7 @@ function commerce_passkey_reglink_admin_display() {
 	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_hotel_text']  = array(
 		'#type' => 'textfield',
 		'#title' => t('Hotel Text'),
-		'#default_value' => variable_get('commerce_passkey_reglink_hotel_text', 'RESERVE A ROOM AT THE HYATT REGENCY HOTEL')
+		'#default_value' => variable_get('commerce_passkey_reglink_hotel_text', '')
 	);
 	
 	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_link_text']  = array(
@@ -153,7 +153,7 @@ function commerce_passkey_reglink_admin_display() {
 	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_reserved_hotel_text']  = array(
 		'#type' => 'textfield',
 		'#title' => t('Hotel Text Reserved'),
-		'#default_value' => variable_get('commerce_passkey_reglink_reserved_hotel_text', 'MODIFY RESERVATION AT THE HYATT REGENCY HOTEL')
+		'#default_value' => variable_get('commerce_passkey_reglink_reserved_hotel_text', 'Modify hotel registration')
 	);
 	
 	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_reserved_link_text']  = array(
@@ -166,7 +166,7 @@ function commerce_passkey_reglink_admin_display() {
 		'#type' => 'textarea',
 		'#rows' => 2,
 		'#title' => t('Payment Page Text'),
-		'#default_value' => variable_get('commerce_passkey_reglink_payment_page', 'A link to reserve a room at the Hyatt Regency Dallas is on your convention registration confirmation which you will receive by email once your order is completed.')
+		'#default_value' => variable_get('commerce_passkey_reglink_payment_page', 'A link to reserve a room at your hotel is on your convention registration confirmation which you will receive by email once your order is completed.')
 	);	
 	$form['commerce_passkey_reglink_text']['commerce_passkey_reglink_payment_page_display']  = array(
 		'#type' => 'checkbox',
